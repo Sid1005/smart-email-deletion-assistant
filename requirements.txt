@@ -1,0 +1,8 @@
+google-api-python-client==2.84.0  # Official Google API client
+google-auth-httplib2==0.1.0       # HTTP transport for Google Auth
+google-auth-oauthlib==1.0.0       # OAuth2 flow handling
+groq==0.12.0
+flask==2.3.2                      # Web server framework
+pyyaml==6.0                       # YAML config file parsing
+python-dateutil==2.8.2           # Date/time manipulation
+schedule==1.2.0                   # Task scheduling

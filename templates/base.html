@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Management Dashboard</title>
+    <!-- Tailwind CSS from CDN for quick styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation header -->
+    <nav class="bg-blue-600 text-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <h1 class="text-xl font-bold">📧 Email Management</h1>
+                <a href="{{ url_for('dashboard') }}" class="text-blue-100 hover:text-white">
+                    Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash messages -->
+    <div class="max-w-6xl mx-auto px-4 py-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="mb-4 p-4 rounded-lg 
+                        {% if category == 'error' %}bg-red-100 text-red-700 border border-red-300
+                        {% elif category == 'success' %}bg-green-100 text-green-700 border border-green-300
+                        {% elif category == 'warning' %}bg-yellow-100 text-yellow-700 border border-yellow-300
+                        {% elif category == 'info' %}bg-blue-100 text-blue-700 border border-blue-300
+                        {% else %}bg-gray-100 text-gray-700 border border-gray-300{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main content area -->
+    <main class="max-w-6xl mx-auto px-4 pb-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-300 text-center py-4 mt-8">
+        <p>Email Management Agent | Powered by Groq AI & Gmail API</p>
+    </footer>
+</body>
+</html>

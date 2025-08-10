@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page header -->
+    <div class="bg-white p-6 rounded-lg shadow border">
+        <h2 class="text-2xl font-bold text-gray-900">Review {{ total_emails }} Emails</h2>
+        <div class="flex items-center space-x-6 mt-3 text-sm">
+            <span class="text-red-600">🗑️ {{ delete_count }} recommended for deletion</span>
+            <span class="text-yellow-600">⚠️ {{ review_count }} need review</span>
+            <span class="text-green-600">✅ {{ keep_count }} recommended to keep</span>
+        </div>
+    </div>
+
+    <!-- Form for email selections -->
+    <form method="POST" action="{{ url_for('execute_deletions', run_id=run_id) }}" id="emailForm">
+        
+        <!-- Bulk action controls -->
+        <div class="bg-white p-4 rounded-lg shadow border">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div class="flex items-center space-x-4">
+                    <button type="button" onclick="selectAll()" 
+                            class="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">
+                        ☑️ Select All
+                    </button>
+                    <button type="button" onclick="selectNone()" 
+                            class="text-sm bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700">
+                        ☐ Select None
+                    </button>
+                    <button type="button" onclick="selectRecommended()" 
+                            class="text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
+                        🗑️ Select AI Recommended ({{ delete_count }})
+                    </button>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <span id="selectedCount" class="text-sm text-gray-600">0 selected</span>
+                    <button type="submit" 
+                            class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 font-medium"
+                            onclick="return confirmDeletion()">
+                        Delete Selected
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email list -->
+        <div class="space-y-3">
+            {% for email in emails %}
+            <div class="bg-white rounded-lg shadow border overflow-hidden
+                {% if email.recommended_action == 'delete' %}border-l-4 border-l-red-500
+                {% elif email.recommended_action == 'review' %}border-l-4 border-l-yellow-500
+                {% else %}border-l-4 border-l-green-500{% endif %}">
+                
+                <div class="p-4">
+                    <div class="flex items-start space-x-3">
+                        <!-- Checkbox -->
+                        <div class="flex-shrink-0 pt-1">
+                            <input type="checkbox" 
+                                   name="selected_emails" 
+                                   value="{{ email.id }}"
+                                   class="email-checkbox"
+                                   data-action="{{ email.recommended_action }}"
+                                   {% if email.recommended_action == 'delete' %}checked{% endif %}
+                                   onchange="updateSelectedCount()">
+                        </div>
+                        
+                        <!-- Email content -->
+                        <div class="flex-1 min-w-0">
+                            <!-- Subject and metadata -->
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-lg font-medium text-gray-900 truncate">
+                                    {% if email.is_unread %}📩{% else %}📧{% endif %}
+                                    {{ email.subject }}
+                                </h3>
+                                <span class="text-sm text-gray-500">
+                                    {{ email.date[:16] }}
+                                </span>
+                            </div>
+                            
+                            <!-- Sender -->
+                            <p class="text-sm text-gray-600 mb-2">
+                                <strong>From:</strong> {{ email.sender }}
+                            </p>
+                            
+                            <!-- Email snippet -->
+                            <p class="text-sm text-gray-500 line-clamp-2 mb-3">
+                                {{ email.snippet }}
+                            </p>
+                            
+                            <!-- AI recommendation -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-4">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                                        {% if email.recommended_action == 'delete' %}bg-red-100 text-red-800
+                                        {% elif email.recommended_action == 'review' %}bg-yellow-100 text-yellow-800
+                                        {% else %}bg-green-100 text-green-800{% endif %}">
+                                        {{ email.recommended_action.upper() }}
+                                    </span>
+                                    
+                                    <span class="text-xs text-gray-500">
+                                        {{ email.category }} | {{ (email.confidence * 100)|round }}% confidence
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- AI reasoning -->
+                            <p class="text-xs text-gray-400 mt-2 italic">
+                                💡 {{ email.reason }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Bottom actions -->
+        <div class="bg-white p-4 rounded-lg shadow border">
+            <div class="flex items-center justify-between">
+                <a href="{{ url_for('dashboard') }}" 
+                   class="text-gray-600 hover:text-gray-800">
+                    ← Back to Dashboard
+                </a>
+                
+                <div class="flex items-center space-x-4">
+                    <span id="selectedCount2" class="text-sm text-gray-600">0 selected</span>
+                    <button type="submit" 
+                            class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 font-medium"
+                            onclick="return confirmDeletion()">
+                        Delete Selected Emails
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+    </form>
+</div>
+
+<!-- JavaScript for form interactions -->
+<script>
+function selectAll() {
+    const checkboxes = document.querySelectorAll('.email-checkbox');
+    checkboxes.forEach(cb => cb.checked = true);
+    updateSelectedCount();
+}
+
+function selectNone() {
+    const checkboxes = document.querySelectorAll('.email-checkbox');
+    checkboxes.forEach(cb => cb.checked = false);
+    updateSelectedCount();
+}
+
+function selectRecommended() {
+    const checkboxes = document.querySelectorAll('.email-checkbox');
+    checkboxes.forEach(cb => {
+        cb.checked = (cb.dataset.action === 'delete');
+    });
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    const checked = document.querySelectorAll('.email-checkbox:checked').length;
+    document.getElementById('selectedCount').textContent = `${checked} selected`;
+    document.getElementById('selectedCount2').textContent = `${checked} selected`;
+}
+
+function confirmDeletion() {
+    const checked = document.querySelectorAll('.email-checkbox:checked').length;
+    if (checked === 0) {
+        alert('Please select at least one email to delete.');
+        return false;
+    }
+    
+    return confirm(`Are you sure you want to delete ${checked} emails? This will move them to Gmail trash.`);
+}
+
+// Initialize count on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateSelectedCount();
+});
+</script>
+
+{% endblock %}

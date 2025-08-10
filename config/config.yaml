@@ -1,0 +1,38 @@
+ # Email Agent Configuration
+gmail:
+  scopes:
+    - https://www.googleapis.com/auth/gmail.readonly
+    - https://www.googleapis.com/auth/gmail.modify
+  max_emails_per_run: 100
+  days_to_analyze: 5000
+
+groq:
+  model: "llama-3.1-8b-instant"  # Fast and free!
+  max_tokens: 4000
+
+deletion_rules:
+  # Never delete emails from these senders
+  protected_senders:
+    - "f20213145@hyderbad.bits-pilani.ac.in"
+  
+  # Auto-recommend deletion for these patterns
+  auto_delete_patterns:
+    - "unsubscribe"
+    - "promotional"
+    - "marketing"
+  
+  # Don't delete emails newer than this (hours)
+  min_age_hours: 1
+
+web_interface:
+  host: "localhost"
+  port: 5000
+  debug: true
+
+database:
+  path: "data/emails.db"
+
+pagination:
+  page_size: 50
+  auto_continue: true
+  save_position: true
