@@ -35,27 +35,22 @@ def dashboard():
         
         # Calculate pages analyzed (multiples of 50)
         pages_analyzed = stats['total_emails'] // 50
-        remaining_in_current = stats['total_emails'] % 50
         
-        # Check if we can continue from last page
-        pagination_status = email_processor.get_pagination_status()
-        can_continue = pagination_status['can_continue']
-        
-        # Check for pending review
+        # Get latest run ID for review button
+        latest_run_id = None
         pending_run = email_processor.get_pending_review()
-        has_pending_review = pending_run is not None
-        pending_run_id = pending_run['run'][0] if has_pending_review else None
-        pending_email_count = len(pending_run['emails']) if has_pending_review else 0
+        if pending_run:
+            latest_run_id = pending_run['run'][0]
+        
+        # Prepare simplified stats for template
+        simplified_stats = {
+            'pages_analyzed': pages_analyzed,
+            'total_deleted': stats['total_deletions']
+        }
         
         return render_template('dashboard.html',
-                             pages_analyzed=pages_analyzed,
-                             remaining_in_current=remaining_in_current,
-                             total_emails_analyzed=stats['total_emails'],
-                             total_deleted=stats['total_deletions'],
-                             can_continue=can_continue,
-                             has_pending_review=has_pending_review,
-                             pending_run_id=pending_run_id,
-                             pending_email_count=pending_email_count)
+                             stats=simplified_stats,
+                             latest_run_id=latest_run_id)
         
     except Exception as e:
         flash(f'Error loading dashboard: {str(e)}', 'error')

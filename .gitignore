@@ -1,0 +1,36 @@
+#.gitignore ensures your repository contains only the important, shareable code!
+
+# Environment variables
+.env
+
+# Database files
+*.db
+data/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+src/__pycache__/
+
+# Virtual environment
+venv/
+env/
+
+# IDE files
+.vscode/
+.idea/
+
+# Gmail API credentials and tokens
+config/credentials.json
+token.pickle
+
+# Claude settings
+.claude/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db

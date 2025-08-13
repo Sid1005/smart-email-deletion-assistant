@@ -5,127 +5,53 @@
     <!-- Page title -->
     <div class="text-center">
         <h2 class="text-3xl font-bold text-gray-900">Email Management Dashboard</h2>
-        <p class="text-gray-600 mt-2">Analyze and manage your emails with AI assistance</p>
+        <p class="text-gray-600 mt-2">Analyze and manage your emails 50 at a time</p>
     </div>
 
-    <!-- Statistics cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <!-- Simplified Statistics cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="bg-white p-6 rounded-lg shadow border">
-            <h3 class="text-sm font-medium text-gray-500">Total Emails</h3>
-            <p class="text-2xl font-bold text-blue-600">{{ stats.total_emails }}</p>
+            <h3 class="text-sm font-medium text-gray-500">Pages Analyzed</h3>
+            <p class="text-2xl font-bold text-blue-600">{{ stats.pages_analyzed }}</p>
+            <p class="text-xs text-gray-400">({{ stats.pages_analyzed * 50 }} emails total)</p>
         </div>
         <div class="bg-white p-6 rounded-lg shadow border">
-            <h3 class="text-sm font-medium text-gray-500">Processed</h3>
-            <p class="text-2xl font-bold text-green-600">{{ stats.processed_emails }}</p>
-        </div>
-        <div class="bg-white p-6 rounded-lg shadow border">
-            <h3 class="text-sm font-medium text-gray-500">Pending Review</h3>
-            <p class="text-2xl font-bold text-yellow-600">{{ stats.pending_emails }}</p>
-        </div>
-        <div class="bg-white p-6 rounded-lg shadow border">
-            <h3 class="text-sm font-medium text-gray-500">Deleted</h3>
-            <p class="text-2xl font-bold text-red-600">{{ stats.total_deletions }}</p>
+            <h3 class="text-sm font-medium text-gray-500">Total Deleted</h3>
+            <p class="text-2xl font-bold text-red-600">{{ stats.total_deleted }}</p>
         </div>
     </div>
 
-    <!-- Action buttons -->
+    <!-- Two-Button Interface -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         
-        <!-- Start new analysis -->
-        <div class="bg-white p-6 rounded-lg shadow border">
-            <h3 class="text-lg font-semibold text-gray-900 mb-3">🔍 Start New Analysis</h3>
-            <p class="text-gray-600 mb-4">Analyze the next batch of emails with AI recommendations</p>
+        <!-- Analyze Next 50 -->
+        <div class="bg-white p-8 rounded-lg shadow border">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">🔍 Analyze Next 50 Emails</h3>
+            <p class="text-gray-600 mb-6">Process the next batch of 50 emails with AI analysis</p>
             
             <form method="POST" action="{{ url_for('start_analysis') }}">
                 <button type="submit" 
-                        class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium">
-                    Analyze New Emails
+                        class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium text-lg">
+                    Analyze Next 50
                 </button>
             </form>
         </div>
 
-        <!-- Continue or recover -->
-        <div class="bg-white p-6 rounded-lg shadow border">
-            {% if needs_recovery %}
-                <h3 class="text-lg font-semibold text-orange-600 mb-3">🔄 Recovery Needed</h3>
-                <p class="text-gray-600 mb-2">Incomplete analysis detected:</p>
-                <p class="text-sm text-gray-500 mb-4">
-                    {{ recovery_info.processed_count }}/{{ recovery_info.total_emails }} emails completed 
-                    ({{ recovery_info.progress_percentage }}%)
-                </p>
-            {% elif can_continue %}
-                <h3 class="text-lg font-semibold text-gray-900 mb-3">▶️ Continue Analysis</h3>
-                <p class="text-gray-600 mb-4">Continue processing emails from where you left off</p>
+        <!-- Review Latest Analysis -->
+        <div class="bg-white p-8 rounded-lg shadow border">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">� Review Analysis</h3>
+            {% if latest_run_id %}
+                <p class="text-gray-600 mb-6">Review and confirm deletions from latest analysis</p>
+                <a href="{{ url_for('review_emails', run_id=latest_run_id) }}" 
+                   class="w-full inline-block text-center bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-medium text-lg">
+                    Review Latest 50
+                </a>
             {% else %}
-                <h3 class="text-lg font-semibold text-gray-400 mb-3">▶️ Continue Analysis</h3>
-                <p class="text-gray-500 mb-4">No saved position to continue from</p>
+                <p class="text-gray-500 mb-6">No analysis available to review yet</p>
+                <button class="w-full bg-gray-300 text-gray-500 px-6 py-3 rounded-lg cursor-not-allowed font-medium text-lg" disabled>
+                    No Analysis to Review
+                </button>
             {% endif %}
-            
-            <form method="POST" action="{{ url_for('continue_analysis') }}">
-                <button type="submit" 
-                        {% if needs_recovery or can_continue %}
-                            class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-medium"
-                        {% else %}
-                            class="w-full bg-gray-300 text-gray-500 px-4 py-2 rounded-lg cursor-not-allowed font-medium" disabled
-                        {% endif %}>
-                    {% if needs_recovery %}Recover & Continue{% else %}Continue Analysis{% endif %}
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Pending review alert -->
-    {% if has_pending_review %}
-    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <div class="flex items-center">
-            <div class="flex-shrink-0">
-                <span class="text-yellow-400 text-xl">⚠️</span>
-            </div>
-            <div class="ml-3 flex-1">
-                <h3 class="text-sm font-medium text-yellow-800">
-                    You have {{ pending_email_count }} emails waiting for review
-                </h3>
-                <div class="mt-2">
-                    <a href="{{ url_for('review_emails', run_id=pending_run_id) }}" 
-                       class="text-sm bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700">
-                        Review Now
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Additional info -->
-    <div class="bg-white p-6 rounded-lg shadow border">
-        <h3 class="text-lg font-semibold text-gray-900 mb-3">📊 Processing Stats</h3>
-        <div class="grid grid-cols-2 gap-4 text-sm">
-            <div>
-                <span class="text-gray-500">Processing Rate:</span>
-                <span class="font-medium ml-2">{{ stats.processing_rate }}%</span>
-            </div>
-            <div>
-                <span class="text-gray-500">Avg per Run:</span>
-                <span class="font-medium ml-2">{{ stats.avg_emails_per_run }} emails</span>
-            </div>
-            <div>
-                <span class="text-gray-500">Total Runs:</span>
-                <span class="font-medium ml-2">{{ stats.total_runs }}</span>
-            </div>
-            <div>
-                <span class="text-gray-500">Recent Runs:</span>
-                <span class="font-medium ml-2">{{ stats.recent_runs }} (7 days)</span>
-            </div>
-        </div>
-        
-        <!-- Test connections button -->
-        <div class="mt-4 pt-4 border-t">
-            <form method="POST" action="{{ url_for('test_connections') }}" class="inline">
-                <button type="submit" 
-                        class="text-sm bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700">
-                    Test API Connections
-                </button>
-            </form>
         </div>
     </div>
 </div>

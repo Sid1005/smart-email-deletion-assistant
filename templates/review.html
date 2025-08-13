@@ -54,12 +54,12 @@
                 
                 <div class="p-4">
                     <div class="flex items-start space-x-3">
-                        <!-- Checkbox -->
+                        <!-- Larger Checkbox -->
                         <div class="flex-shrink-0 pt-1">
                             <input type="checkbox" 
                                    name="selected_emails" 
                                    value="{{ email.id }}"
-                                   class="email-checkbox"
+                                   class="email-checkbox w-5 h-5 text-red-600 border-2 border-gray-300 rounded focus:ring-red-500"
                                    data-action="{{ email.recommended_action }}"
                                    {% if email.recommended_action == 'delete' %}checked{% endif %}
                                    onchange="updateSelectedCount()">
