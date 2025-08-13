@@ -1,1 +1,6 @@
- 
+This email management system uses artificial intelligence to help users organize their Gmail inbox storage by analyzing emails and providing smart recommendations for deletion, review, or retention. The application processes emails in batches of 50, with Groq's LLaMA language model evaluating each email based on content, sender patterns, and characteristics to suggest appropriate actions. Users can quickly review these AI recommendations through a clean web interface with color-coded suggestions and bulk selection tools.
+I can analyze 50 mails done through Groq, then review them to choose what exactly I want to delete. The AI never learns my patterns here. The AI continues to keep checking the first 50 mails always, so a lot of repeated analysis.
+
+The system is built with Python using Flask for the web framework and SQLite for data persistence, while integrating with Gmail's API for secure email access and manipulation. The frontend uses Tailwind CSS for responsive design, featuring an intuitive dashboard where users can analyze new emails and review AI suggestions with larger checkboxes and visual indicators. The modular architecture separates concerns with dedicated classes for Gmail integration, AI analysis, database operations, and web interface management.
+
+Key technologies include Python Flask for the web server, Google Gmail API with OAuth2 authentication, Groq AI API for email categorization, SQLite for local storage, and Tailwind CSS for modern styling. 
